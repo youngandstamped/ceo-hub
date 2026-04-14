@@ -8,7 +8,745 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CEO Hub — Alexia Heath</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f5;
+    --surface2: #ebebeb;
+    --border: rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+    --text: #1a1a1a;
+    --muted: #555555;
+    --hint: #999999;
+    --ys:  #a89be0;
+    --vir: #5ecba1;
+    --ahs: #e8845a;
+    --dp:  #e0b86a;
+    --pb:  #e07aaa;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', sans-serif;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .app { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+
+  .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem; }
+  .header-eyebrow { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .header-title { font-family: var(--font-display); font-size: 32px; font-weight: 400; color: var(--text); }
+  .header-title em { font-style: italic; }
+  .header-right { text-align: right; }
+  .date-badge { font-size: 12px; color: var(--muted); border: 0.5px solid var(--border2); border-radius: 20px; padding: 5px 14px; }
+  .location-badge { font-size: 11px; color: var(--vir); margin-top: 6px; display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+  .dot-pulse { width: 6px; height: 6px; background: var(--vir); border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  .sync-bar { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); margin-bottom: 1.5rem; height: 16px; }
+  .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--hint); flex-shrink: 0; transition: background 0.3s; }
+  .sync-dot.synced { background: var(--vir); }
+  .sync-dot.syncing { background: var(--dp); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--ahs); }
+
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 2rem; }
+  .metric { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 18px 20px; transition: border-color 0.2s; }
+  .metric:hover { border-color: var(--border2); }
+  .metric-label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 8px; }
+  .metric-val { font-family: var(--font-display); font-size: 28px; font-weight: 400; color: var(--text); line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--hint); margin-top: 4px; }
+
+  .lanes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 2rem; }
+  .lane-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; position: relative; overflow: hidden; transition: all 0.2s; }
+  .lane-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--lane-color); opacity: 0.7; }
+  .lane-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .lane-name { font-size: 12px; font-weight: 500; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .lane-stats { font-size: 11px; color: var(--muted); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .panel { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .panel-title { font-family: var(--font-display); font-size: 16px; font-weight: 400; color: var(--text); }
+  .btn-add { font-size: 11px; color: var(--muted); background: none; border: 0.5px solid var(--border2); border-radius: 20px; padding: 4px 12px; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+  .btn-add:hover { color: var(--text); border-color: rgba(0,0,0,0.25); }
+
+  .form-wrap { margin-bottom: 14px; display: none; }
+  .form-wrap.open { display: block; }
+  .form-row { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .form-row input, .form-row select { font-family: var(--font-body); font-size: 12px; padding: 7px 10px; background: var(--surface2); color: var(--text); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); outline: none; flex: 1; min-width: 0; }
+  .form-row input::placeholder { color: var(--hint); }
+  .form-row textarea { font-family: var(--font-body); font-size: 12px; padding: 7px 10px; background: var(--surface2); color: var(--text); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); outline: none; flex: 1; min-width: 0; resize: vertical; min-height: 60px; line-height: 1.4; }
+  .form-row textarea::placeholder { color: var(--hint); }
+  .form-row textarea:focus { border-color: rgba(0,0,0,0.25); }
+  .cal-caption { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.4; font-style: italic; white-space: pre-wrap; }
+  .form-row input:focus, .form-row select:focus { border-color: rgba(0,0,0,0.25); }
+  .form-row select option { background: #ffffff; }
+  .btn-save { font-family: var(--font-body); font-size: 12px; padding: 7px 16px; background: none; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn-save:hover { background: var(--surface2); border-color: rgba(0,0,0,0.25); }
+  .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .task-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .task-item:last-child { border-bottom: none; }
+  .check { width: 16px; height: 16px; border-radius: 4px; border: 0.5px solid var(--border2); flex-shrink: 0; cursor: pointer; margin-top: 1px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .check.done { background: var(--vir); border-color: var(--vir); }
+  .check.done::after { content: ''; width: 8px; height: 5px; border-left: 1.5px solid #ffffff; border-bottom: 1.5px solid #ffffff; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .task-body { flex: 1; }
+  .task-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .task-text.done { text-decoration: line-through; color: var(--hint); }
+  .lane-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; display: inline-block; margin-top: 4px; }
+
+  .cal-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .cal-content { flex: 1; min-width: 0; }
+  .cal-item:last-child { border-bottom: none; }
+  .cal-row { display: flex; justify-content: space-between; gap: 8px; }
+  .cal-text { font-size: 13px; color: var(--text); line-height: 1.4; }
+  .cal-date { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .cal-meta { display: flex; gap: 6px; align-items: center; margin-top: 4px; flex-wrap: wrap; }
+  .platform-tag { font-size: 10px; color: var(--muted); }
+
+  .pipe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .pipe-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+  .pipe-item:last-child { border-bottom: none; }
+  .pipe-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .pipe-name { font-size: 13px; color: var(--text); flex: 1; }
+  .stage-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .pipe-date { font-size: 11px; color: var(--muted); white-space: nowrap; }
+
+  .s-ideating  { background: rgba(168,155,224,0.12); color: var(--ys); }
+  .s-planning  { background: rgba(94,203,161,0.12);  color: var(--vir); }
+  .s-building  { background: rgba(224,184,106,0.12); color: var(--dp); }
+  .s-launching { background: rgba(232,132,90,0.12);  color: var(--ahs); }
+  .s-live      { background: rgba(224,122,170,0.12); color: var(--pb); }
+
+  .item-menu { position: relative; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+  .task-item:hover .item-menu, .cal-item:hover .item-menu, .pipe-item:hover .item-menu, .idea-item:hover .item-menu { opacity: 1; }
+  .item-menu.open { opacity: 1; }
+  .menu-btn { font-size: 16px; color: var(--hint); background: none; border: none; cursor: pointer; padding: 0 4px; line-height: 1; letter-spacing: 1px; }
+  .menu-btn:hover { color: var(--text); }
+  .item-menu-dropdown { display: none; position: absolute; right: 0; top: 100%; z-index: 100; background: var(--surface2); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); min-width: 90px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); overflow: hidden; }
+  .item-menu.open .item-menu-dropdown { display: block; }
+  .item-menu-option { display: block; width: 100%; text-align: left; background: none; border: none; padding: 8px 14px; font-size: 12px; font-family: var(--font-body); color: var(--muted); cursor: pointer; transition: background 0.1s, color 0.1s; }
+  .item-menu-option:hover { background: var(--surface3,rgba(255,255,255,0.06)); color: var(--text); }
+  .item-menu-option.danger:hover { color: var(--ahs); }
+  .inline-edit { padding: 10px; background: var(--surface2); border-radius: var(--radius-sm); margin: 4px 0; border: 0.5px solid var(--border2); }
+  .inline-edit .form-row { margin-bottom: 6px; }
+  .inline-edit .form-row:last-child { margin-bottom: 0; }
+  .btn-cancel { font-family: var(--font-body); font-size: 12px; padding: 7px 16px; background: none; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  .btn-cancel:hover { color: var(--text); border-color: rgba(0,0,0,0.25); }
+
+  .empty { font-size: 12px; color: var(--hint); padding: 12px 0; font-style: italic; }
+  .loading { font-size: 12px; color: var(--muted); padding: 12px 0; }
+
+  .ideas-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .filter-btn { font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 0.5px solid var(--border2); background: none; color: var(--muted); cursor: pointer; font-family: var(--font-body); transition: all 0.15s; white-space: nowrap; }
+  .filter-btn:hover { color: var(--text); border-color: rgba(0,0,0,0.25); }
+  .filter-btn.active { color: var(--text); border-color: rgba(0,0,0,0.25); background: var(--surface2); }
+  .idea-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .idea-item:last-child { border-bottom: none; }
+  .idea-body { flex: 1; min-width: 0; }
+  .idea-title { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .idea-notes { font-size: 11px; color: var(--muted); margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .idea-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .series-tag { font-size: 10px; color: var(--hint); font-style: italic; }
+  .status-pill { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 20px; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; user-select: none; }
+  .status-pill:hover { opacity: 0.75; }
+  .s-idea    { background: rgba(122,119,113,0.15); color: var(--muted); }
+  .s-filmed  { background: rgba(224,184,106,0.12); color: var(--dp); }
+  .s-posted  { background: rgba(94,203,161,0.12);  color: var(--vir); }
+
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .lanes { grid-template-columns: repeat(3, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .pipe-grid { grid-template-columns: 1fr; }
+    .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .header-right { text-align: left; }
+    .location-badge { justify-content: flex-start; }
+  }
+  @media (max-width: 600px) {
+    .app { padding: 1.5rem 1rem 3rem; }
+    .lanes { grid-template-columns: repeat(2, 1fr); }
+    .header-title { font-size: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="header-eyebrow">ceo command center</div>
+      <div class="header-title">hey <em>alexia,</em> here's your full picture</div>
+    </div>
+    <div class="header-right">
+      <div class="date-badge" id="date-badge"></div>
+      <div class="location-badge"><div class="dot-pulse"></div> building from bali</div>
+    </div>
+  </div>
+
+  <div class="sync-bar">
+    <div class="sync-dot syncing" id="sync-dot"></div>
+    <span id="sync-label">connecting...</span>
+  </div>
+
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">open tasks</div><div class="metric-val" id="m-open">—</div><div class="metric-sub">across all lanes</div></div>
+    <div class="metric"><div class="metric-label">done today</div><div class="metric-val" id="m-done">—</div><div class="metric-sub">keep going</div></div>
+    <div class="metric"><div class="metric-label">posts scheduled</div><div class="metric-val" id="m-posts">—</div><div class="metric-sub">this period</div></div>
+    <div class="metric"><div class="metric-label">active launches</div><div class="metric-val" id="m-launches">—</div><div class="metric-sub">in flight</div></div>
+  </div>
+
+  <div class="lanes" id="lane-cards"></div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">focus tasks</span>
+        <button class="btn-add" onclick="toggleForm('tf')">+ add</button>
+      </div>
+      <div class="form-wrap" id="tf">
+        <div class="form-row"><input id="ti" placeholder="what needs to get done..." /></div>
+        <div class="form-row">
+          <select id="tl">
+            <option value="ys">young & stamped</option>
+            <option value="vir">avari travel</option>
+            <option value="ahs">ah social</option>
+            <option value="dp">digital products</option>
+            <option value="pb">personal brand</option>
+          </select>
+          <button class="btn-save" id="task-btn" onclick="addTask()">save</button>
+        </div>
+      </div>
+      <div id="task-list"><div class="loading">loading tasks...</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">content calendar</span>
+        <button class="btn-add" onclick="toggleForm('cf')">+ add</button>
+      </div>
+      <div class="form-wrap" id="cf">
+        <div class="form-row">
+          <input id="ci" placeholder="post title or idea..." />
+          <select id="cp"><option>TikTok</option><option>Instagram</option><option>LinkedIn</option><option>Threads</option></select>
+        </div>
+        <div class="form-row">
+          <textarea id="cc" placeholder="caption (optional)..."></textarea>
+        </div>
+        <div class="form-row">
+          <input type="date" id="cd" style="flex:1;" />
+          <select id="cl">
+            <option value="ys">young & stamped</option>
+            <option value="vir">avari travel</option>
+            <option value="ahs">ah social</option>
+            <option value="dp">digital products</option>
+            <option value="pb">personal brand</option>
+          </select>
+          <button class="btn-save" id="cal-btn" onclick="addCal()">save</button>
+        </div>
+      </div>
+      <div id="cal-list"><div class="loading">loading posts...</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">launch pipeline</span>
+      <button class="btn-add" onclick="toggleForm('pf')">+ add</button>
+    </div>
+    <div class="form-wrap" id="pf">
+      <div class="form-row">
+        <input id="pi" placeholder="project or launch name..." style="flex:2;" />
+        <select id="ps"><option>ideating</option><option>planning</option><option>building</option><option>launching</option><option>live</option></select>
+      </div>
+      <div class="form-row">
+        <input type="date" id="pd" />
+        <select id="pl">
+          <option value="ys">young & stamped</option>
+          <option value="vir">avari travel</option>
+          <option value="ahs">ah social</option>
+          <option value="dp">digital products</option>
+          <option value="pb">personal brand</option>
+        </select>
+        <button class="btn-save" id="pipe-btn" onclick="addPipe()">save</button>
+      </div>
+    </div>
+    <div class="pipe-grid" id="pipe-list"><div class="loading">loading pipeline...</div></div>
+  </div>
+
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-header">
+      <span class="panel-title">ideas bank</span>
+      <button class="btn-add" onclick="toggleForm('idf')">+ add</button>
+    </div>
+    <div class="form-wrap" id="idf">
+      <div class="form-row">
+        <input id="idtitle" placeholder="idea title..." style="flex:2;" />
+        <select id="idseries">
+          <option value="nobody talks about this">nobody talks about this</option>
+          <option value="this or that">this or that</option>
+          <option value="the life">the life</option>
+          <option value="the build">the build</option>
+          <option value="the move">the move</option>
+          <option value="one-off">one-off</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <input id="idnotes" placeholder="notes..." style="flex:2;" />
+        <select id="idlane">
+          <option value="ys">young &amp; stamped</option>
+          <option value="vir">avari travel</option>
+          <option value="ahs">ah social</option>
+          <option value="dp">digital products</option>
+          <option value="pb">personal brand</option>
+        </select>
+        <button class="btn-save" id="idea-btn" onclick="addIdea()">save</button>
+      </div>
+    </div>
+    <div class="ideas-filter" id="ideas-filter">
+      <button class="filter-btn active" onclick="filterIdeas('all')">all</button>
+      <button class="filter-btn" onclick="filterIdeas('nobody talks about this')">nobody talks about this</button>
+      <button class="filter-btn" onclick="filterIdeas('this or that')">this or that</button>
+      <button class="filter-btn" onclick="filterIdeas('the life')">the life</button>
+      <button class="filter-btn" onclick="filterIdeas('the build')">the build</button>
+      <button class="filter-btn" onclick="filterIdeas('the move')">the move</button>
+      <button class="filter-btn" onclick="filterIdeas('one-off')">one-off</button>
+    </div>
+    <div id="idea-list"><div class="loading">loading ideas...</div></div>
+  </div>
+
+</div>
+<script>
+const SUPABASE_URL = 'https://mgtgrtwzzwcfybwotyqj.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ndGdydHd6endjZnlid290eXFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1OTkwMjEsImV4cCI6MjA5MDE3NTAyMX0.YxwOUznXPP4qHtn-Jukta5lJCdsilxK1U1fw_ydHAJY';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const LANES = {
+  ys:  { name: "young & stamped",  color: "#a89be0" },
+  vir: { name: "avari travel",      color: "#5ecba1" },
+  ahs: { name: "ah social",        color: "#e8845a" },
+  dp:  { name: "digital products", color: "#e0b86a" },
+  pb:  { name: "personal brand",   color: "#e07aaa" }
+};
+const STAGE_CLASS = { ideating:'s-ideating', planning:'s-planning', building:'s-building', launching:'s-launching', live:'s-live' };
+
+let tasks = [], cal = [], pipe = [];
+
+function setSync(state, msg) {
+  document.getElementById('sync-dot').className = 'sync-dot ' + state;
+  document.getElementById('sync-label').textContent = msg;
+}
+
+function pill(k) {
+  const l = LANES[k]; if (!l) return '';
+  return `<span class="lane-pill" style="background:${l.color}20;color:${l.color};">${l.name}</span>`;
+}
+
+function fmtDate(raw) {
+  if (!raw) return 'TBD';
+  return new Date(raw + 'T00:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+}
+function fmtMonth(raw) {
+  if (!raw) return 'TBD';
+  return new Date(raw + 'T00:00:00').toLocaleDateString('en-US', { month:'short', year:'numeric' });
+}
+
+function render() {
+  document.getElementById('date-badge').textContent = new Date().toLocaleDateString('en-US', { weekday:'short', month:'long', day:'numeric', year:'numeric' });
+  document.getElementById('m-open').textContent = tasks.filter(t => !t.done).length;
+  document.getElementById('m-done').textContent = tasks.filter(t => t.done).length;
+  document.getElementById('m-posts').textContent = cal.length;
+  document.getElementById('m-launches').textContent = pipe.filter(p => ['building','launching','live'].includes(p.stage)).length;
+
+  document.getElementById('lane-cards').innerHTML = Object.entries(LANES).map(([k,l]) => {
+    const t = tasks.filter(x => x.lane===k && !x.done).length;
+    const p = pipe.filter(x => x.lane===k).length;
+    return `<div class="lane-card" style="--lane-color:${l.color};">
+      <div class="lane-name">${l.name}</div>
+      <div class="lane-stats">${t} task${t!==1?'s':''} · ${p} launch${p!==1?'es':''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('task-list').innerHTML = tasks.length
+    ? tasks.map(t => `<div class="task-item" id="task-item-${t.id}">
+        <div class="check ${t.done?'done':''}" onclick="toggleTask('${t.id}',${!t.done})"></div>
+        <div class="task-body">
+          <div class="task-text ${t.done?'done':''}">${t.text}</div>
+          ${pill(t.lane)}
+        </div>
+        <div class="item-menu" id="menu-tasks-${t.id}">
+          <button class="menu-btn" onclick="toggleMenu('tasks','${t.id}',event)">⋯</button>
+          <div class="item-menu-dropdown">
+            <button class="item-menu-option" onclick="closeMenu();startEditTask('${t.id}')">edit</button>
+            <button class="item-menu-option danger" onclick="closeMenu();deleteRow('tasks','${t.id}')">delete</button>
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">no tasks yet — add one above</div>';
+
+  document.getElementById('cal-list').innerHTML = cal.length
+    ? cal.map(c => `<div class="cal-item" id="cal-item-${c.id}">
+        <div class="cal-content">
+          <div class="cal-row">
+            <div class="cal-text">${c.text}</div>
+            <div class="cal-date">${c.date}</div>
+          </div>
+          ${c.caption ? `<div class="cal-caption">${c.caption}</div>` : ''}
+          <div class="cal-meta">
+            ${pill(c.lane)}
+            <span class="platform-tag">${c.platform}</span>
+          </div>
+        </div>
+        <div class="item-menu" id="menu-cal-${c.id}">
+          <button class="menu-btn" onclick="toggleMenu('cal','${c.id}',event)">⋯</button>
+          <div class="item-menu-dropdown">
+            <button class="item-menu-option" onclick="closeMenu();startEditCal('${c.id}')">edit</button>
+            <button class="item-menu-option danger" onclick="closeMenu();deleteRow('cal','${c.id}')">delete</button>
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">no posts scheduled — add one above</div>';
+
+  document.getElementById('pipe-list').innerHTML = pipe.length
+    ? pipe.map(p => `<div class="pipe-item" id="pipe-item-${p.id}">
+        <div class="pipe-dot" style="background:${LANES[p.lane]?.color||'#fff'};"></div>
+        <div class="pipe-name">${p.name}</div>
+        <span class="stage-pill ${STAGE_CLASS[p.stage]||'s-ideating'}">${p.stage}</span>
+        <div class="pipe-date">${p.date}</div>
+        <div class="item-menu" id="menu-pipeline-${p.id}">
+          <button class="menu-btn" onclick="toggleMenu('pipeline','${p.id}',event)">⋯</button>
+          <div class="item-menu-dropdown">
+            <button class="item-menu-option" onclick="closeMenu();startEditPipe('${p.id}')">edit</button>
+            <button class="item-menu-option danger" onclick="closeMenu();deleteRow('pipeline','${p.id}')">delete</button>
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">no launches yet — add one above</div>';
+}
+
+async function loadAll() {
+  setSync('syncing', 'loading your data...');
+  try {
+    const [t, c, p, idRes] = await Promise.all([
+      db.from('tasks').select('*').order('created_at', { ascending: true }),
+      db.from('cal').select('*').order('created_at', { ascending: true }),
+      db.from('pipeline').select('*').order('created_at', { ascending: true }),
+      db.from('ideas').select('*').order('created_at', { ascending: true }),
+    ]);
+    if (t.error) throw t.error;
+    if (c.error) throw c.error;
+    if (p.error) throw p.error;
+    if (idRes.error) throw idRes.error;
+    tasks = t.data || []; cal = c.data || []; pipe = p.data || []; ideas = idRes.data || [];
+    setSync('synced', 'synced across all your devices');
+    render(); renderIdeas();
+  } catch(e) { setSync('error', 'connection error'); console.error(e); }
+}
+
+function toggleForm(id) { document.getElementById(id).classList.toggle('open'); }
+
+let _openMenu = null;
+function closeMenu() {
+  if (_openMenu) { _openMenu.classList.remove('open'); _openMenu = null; }
+}
+function toggleMenu(table, id, e) {
+  e.stopPropagation();
+  const el = document.getElementById('menu-' + table + '-' + id);
+  if (_openMenu && _openMenu !== el) closeMenu();
+  if (el.classList.contains('open')) { closeMenu(); } else { el.classList.add('open'); _openMenu = el; }
+}
+document.addEventListener('click', closeMenu);
+
+async function toggleTask(id, done) {
+  setSync('syncing', 'saving...');
+  const { error } = await db.from('tasks').update({ done }).eq('id', id);
+  if (!error) { const t = tasks.find(t => t.id===id); if(t) t.done = done; setSync('synced', 'saved'); render(); }
+  else setSync('error', 'save failed');
+}
+
+async function deleteRow(table, id) {
+  setSync('syncing', 'deleting...');
+  const { error } = await db.from(table).delete().eq('id', id);
+  if (!error) {
+    if (table==='tasks') tasks = tasks.filter(x => x.id!==id);
+    if (table==='cal') cal = cal.filter(x => x.id!==id);
+    if (table==='pipeline') pipe = pipe.filter(x => x.id!==id);
+    if (table==='ideas') ideas = ideas.filter(x => x.id!==id);
+    setSync('synced', 'deleted'); render(); renderIdeas();
+  } else setSync('error', 'delete failed');
+}
+
+function escAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function laneOptions(sel) {
+  return Object.entries(LANES).map(([k,l]) =>
+    `<option value="${k}"${k===sel?' selected':''}>${l.name}</option>`
+  ).join('');
+}
+
+function startEditTask(id) {
+  const t = tasks.find(x => x.id===id); if (!t) return;
+  document.getElementById('task-item-'+id).outerHTML = `<div class="inline-edit" id="task-item-${id}">
+    <div class="form-row"><input id="et-text-${id}" value="${escAttr(t.text)}" style="flex:1;" /></div>
+    <div class="form-row">
+      <select id="et-lane-${id}">${laneOptions(t.lane)}</select>
+      <button class="btn-save" onclick="saveEditTask('${id}')">save</button>
+      <button class="btn-cancel" onclick="render()">cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveEditTask(id) {
+  const text = document.getElementById('et-text-'+id).value.trim();
+  const lane = document.getElementById('et-lane-'+id).value;
+  if (!text) return;
+  setSync('syncing','saving...');
+  const { error } = await db.from('tasks').update({ text, lane }).eq('id', id);
+  if (!error) {
+    const t = tasks.find(x => x.id===id);
+    if (t) { t.text = text; t.lane = lane; }
+    setSync('synced','saved'); render();
+  } else setSync('error','save failed');
+}
+
+function startEditCal(id) {
+  const c = cal.find(x => x.id===id); if (!c) return;
+  document.getElementById('cal-item-'+id).outerHTML = `<div class="inline-edit" id="cal-item-${id}">
+    <div class="form-row">
+      <input id="ec-text-${id}" value="${escAttr(c.text)}" style="flex:2;" />
+      <select id="ec-plat-${id}">
+        <option${c.platform==='TikTok'?' selected':''}>TikTok</option>
+        <option${c.platform==='Instagram'?' selected':''}>Instagram</option>
+        <option${c.platform==='LinkedIn'?' selected':''}>LinkedIn</option>
+        <option${c.platform==='Threads'?' selected':''}>Threads</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <textarea id="ec-caption-${id}" placeholder="caption (optional)...">${escAttr(c.caption||'')}</textarea>
+    </div>
+    <div class="form-row">
+      <input id="ec-date-${id}" value="${escAttr(c.date)}" placeholder="e.g. Mar 29" style="flex:1;" />
+      <select id="ec-lane-${id}">${laneOptions(c.lane)}</select>
+      <button class="btn-save" onclick="saveEditCal('${id}')">save</button>
+      <button class="btn-cancel" onclick="render()">cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveEditCal(id) {
+  const text = document.getElementById('ec-text-'+id).value.trim();
+  const platform = document.getElementById('ec-plat-'+id).value;
+  const date = document.getElementById('ec-date-'+id).value.trim();
+  const lane = document.getElementById('ec-lane-'+id).value;
+  const caption = document.getElementById('ec-caption-'+id).value.trim();
+  if (!text) return;
+  setSync('syncing','saving...');
+  const { error } = await db.from('cal').update({ text, platform, date, lane, caption }).eq('id', id);
+  if (!error) {
+    const c = cal.find(x => x.id===id);
+    if (c) { c.text = text; c.platform = platform; c.date = date; c.lane = lane; c.caption = caption; }
+    setSync('synced','saved'); render();
+  } else setSync('error','save failed');
+}
+
+function startEditPipe(id) {
+  const p = pipe.find(x => x.id===id); if (!p) return;
+  document.getElementById('pipe-item-'+id).outerHTML = `<div class="inline-edit" id="pipe-item-${id}">
+    <div class="form-row">
+      <input id="ep-name-${id}" value="${escAttr(p.name)}" style="flex:2;" />
+      <select id="ep-stage-${id}">
+        <option${p.stage==='ideating'?' selected':''}>ideating</option>
+        <option${p.stage==='planning'?' selected':''}>planning</option>
+        <option${p.stage==='building'?' selected':''}>building</option>
+        <option${p.stage==='launching'?' selected':''}>launching</option>
+        <option${p.stage==='live'?' selected':''}>live</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <input id="ep-date-${id}" value="${escAttr(p.date)}" placeholder="e.g. Mar 2026" style="flex:1;" />
+      <select id="ep-lane-${id}">${laneOptions(p.lane)}</select>
+      <button class="btn-save" onclick="saveEditPipe('${id}')">save</button>
+      <button class="btn-cancel" onclick="render()">cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveEditPipe(id) {
+  const name = document.getElementById('ep-name-'+id).value.trim();
+  const stage = document.getElementById('ep-stage-'+id).value;
+  const date = document.getElementById('ep-date-'+id).value.trim();
+  const lane = document.getElementById('ep-lane-'+id).value;
+  if (!name) return;
+  setSync('syncing','saving...');
+  const { error } = await db.from('pipeline').update({ name, stage, date, lane }).eq('id', id);
+  if (!error) {
+    const p = pipe.find(x => x.id===id);
+    if (p) { p.name = name; p.stage = stage; p.date = date; p.lane = lane; }
+    setSync('synced','saved'); render();
+  } else setSync('error','save failed');
+}
+
+function startEditIdea(id) {
+  const i = ideas.find(x => x.id===id); if (!i) return;
+  document.getElementById('idea-item-'+id).outerHTML = `<div class="inline-edit" id="idea-item-${id}">
+    <div class="form-row">
+      <input id="ei-title-${id}" value="${escAttr(i.title)}" style="flex:2;" />
+      <select id="ei-series-${id}">
+        <option value="nobody talks about this"${i.series==='nobody talks about this'?' selected':''}>nobody talks about this</option>
+        <option value="this or that"${i.series==='this or that'?' selected':''}>this or that</option>
+        <option value="the life"${i.series==='the life'?' selected':''}>the life</option>
+        <option value="the build"${i.series==='the build'?' selected':''}>the build</option>
+        <option value="the move"${i.series==='the move'?' selected':''}>the move</option>
+        <option value="one-off"${i.series==='one-off'?' selected':''}>one-off</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <input id="ei-notes-${id}" value="${escAttr(i.notes||'')}" placeholder="notes..." style="flex:2;" />
+      <select id="ei-lane-${id}">${laneOptions(i.lane)}</select>
+      <button class="btn-save" onclick="saveEditIdea('${id}')">save</button>
+      <button class="btn-cancel" onclick="renderIdeas()">cancel</button>
+    </div>
+  </div>`;
+}
+
+async function saveEditIdea(id) {
+  const title = document.getElementById('ei-title-'+id).value.trim();
+  const series = document.getElementById('ei-series-'+id).value;
+  const notes = document.getElementById('ei-notes-'+id).value.trim();
+  const lane = document.getElementById('ei-lane-'+id).value;
+  if (!title) return;
+  setSync('syncing','saving...');
+  const { error } = await db.from('ideas').update({ title, series, notes, lane }).eq('id', id);
+  if (!error) {
+    const i = ideas.find(x => x.id===id);
+    if (i) { i.title = title; i.series = series; i.notes = notes; i.lane = lane; }
+    setSync('synced','saved'); renderIdeas();
+  } else setSync('error','save failed');
+}
+
+async function addTask() {
+  const text = document.getElementById('ti').value.trim();
+  const lane = document.getElementById('tl').value;
+  if (!text) return;
+  const btn = document.getElementById('task-btn'); btn.disabled = true;
+  setSync('syncing', 'saving...');
+  const { data, error } = await db.from('tasks').insert([{ text, lane, done: false }]).select();
+  btn.disabled = false;
+  if (!error && data) { tasks.push(data[0]); document.getElementById('ti').value = ''; document.getElementById('tf').classList.remove('open'); setSync('synced','saved'); render(); }
+  else { setSync('error','save failed'); console.error(error); }
+}
+
+async function addCal() {
+  const text = document.getElementById('ci').value.trim();
+  const platform = document.getElementById('cp').value;
+  const date = fmtDate(document.getElementById('cd').value);
+  const lane = document.getElementById('cl').value;
+  const caption = document.getElementById('cc').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('cal-btn'); btn.disabled = true;
+  setSync('syncing', 'saving...');
+  const { data, error } = await db.from('cal').insert([{ text, platform, lane, date, caption }]).select();
+  btn.disabled = false;
+  if (!error && data) { cal.push(data[0]); document.getElementById('ci').value = ''; document.getElementById('cc').value = ''; document.getElementById('cf').classList.remove('open'); setSync('synced','saved'); render(); }
+  else { setSync('error','save failed'); console.error(error); }
+}
+
+async function addPipe() {
+  const name = document.getElementById('pi').value.trim();
+  const stage = document.getElementById('ps').value;
+  const date = fmtMonth(document.getElementById('pd').value);
+  const lane = document.getElementById('pl').value;
+  if (!name) return;
+  const btn = document.getElementById('pipe-btn'); btn.disabled = true;
+  setSync('syncing', 'saving...');
+  const { data, error } = await db.from('pipeline').insert([{ name, lane, stage, date }]).select();
+  btn.disabled = false;
+  if (!error && data) { pipe.push(data[0]); document.getElementById('pi').value = ''; document.getElementById('pf').classList.remove('open'); setSync('synced','saved'); render(); }
+  else { setSync('error','save failed'); console.error(error); }
+}
+
+let ideas = [], ideasFilter = 'all';
+
+function filterIdeas(series) {
+  ideasFilter = series;
+  document.querySelectorAll('#ideas-filter .filter-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === series || (series === 'all' && b.textContent.trim() === 'all'));
+  });
+  renderIdeas();
+}
+
+function renderIdeas() {
+  const filtered = ideasFilter === 'all' ? ideas : ideas.filter(i => i.series === ideasFilter);
+  document.getElementById('idea-list').innerHTML = filtered.length
+    ? filtered.map(i => `<div class="idea-item" id="idea-item-${i.id}">
+        <div class="idea-body">
+          <div class="idea-title">${i.title}</div>
+          ${i.notes ? `<div class="idea-notes">${i.notes}</div>` : ''}
+          <div class="idea-meta">
+            <span class="series-tag">${i.series}</span>
+            ${pill(i.lane)}
+            <span class="status-pill s-${i.status||'idea'}" onclick="cycleStatus('${i.id}','${i.status||'idea'}')">${i.status||'idea'}</span>
+          </div>
+        </div>
+        <div class="item-menu" id="menu-ideas-${i.id}">
+          <button class="menu-btn" onclick="toggleMenu('ideas','${i.id}',event)">⋯</button>
+          <div class="item-menu-dropdown">
+            <button class="item-menu-option" onclick="closeMenu();startEditIdea('${i.id}')">edit</button>
+            <button class="item-menu-option danger" onclick="closeMenu();deleteRow('ideas','${i.id}')">delete</button>
+          </div>
+        </div>
+      </div>`).join('')
+    : '<div class="empty">no ideas yet — add one above</div>';
+
+}
+
+const STATUS_CYCLE = { idea: 'filmed', filmed: 'posted', posted: 'idea' };
+
+async function cycleStatus(id, current) {
+  const next = STATUS_CYCLE[current] || 'filmed';
+  setSync('syncing', 'saving...');
+  const { error } = await db.from('ideas').update({ status: next }).eq('id', id);
+  if (!error) { const i = ideas.find(x => x.id === id); if (i) i.status = next; setSync('synced', 'saved'); renderIdeas(); }
+  else setSync('error', 'save failed');
+}
+
+async function addIdea() {
+  const title = document.getElementById('idtitle').value.trim();
+  const series = document.getElementById('idseries').value;
+  const notes = document.getElementById('idnotes').value.trim();
+  const lane = document.getElementById('idlane').value;
+  if (!title) return;
+  const btn = document.getElementById('idea-btn'); btn.disabled = true;
+  setSync('syncing', 'saving...');
+  const { data, error } = await db.from('ideas').insert([{ title, series, notes, lane, status: 'idea' }]).select();
+  btn.disabled = false;
+  if (!error && data) {
+    ideas.push(data[0]);
+    document.getElementById('idtitle').value = '';
+    document.getElementById('idnotes').value = '';
+    document.getElementById('idf').classList.remove('open');
+    setSync('synced', 'saved'); renderIdeas();
+  } else { setSync('error', 'save failed'); console.error(error); }
+}
+
+loadAll();
+</script>
+</body>
+</html>
+
   :root {<!DOCTYPE html>
 <html lang="en"><!DOCTYPE html>
 <html lang="en">
